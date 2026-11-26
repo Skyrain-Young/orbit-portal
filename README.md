@@ -6,7 +6,7 @@ Orbit Portal 是一个可自托管、可玩的星球导航页。把应用放上�
 
 https://github.com/user-attachments/assets/959c293a-de7e-4f76-bcb2-4a8ef68f77cd
 
-[下载 1080p 原版（MP4）](https://github.com/Skyrain-Young/orbit-portal/releases/download/demo-video/Orbit-Portal-Demo-Final.mp4)
+[下载 1080p 原版（MP4）](https://github.com/Skyrain-Young/orbit-portal/releases/download/v0.1.0/Orbit-Portal-Demo-Final.mp4)
 
 ## 本地启动
 

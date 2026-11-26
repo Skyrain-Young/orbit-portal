@@ -23,5 +23,4 @@
 | ItsDangerous | BSD-3-Clause | [Pallets](https://github.com/pallets/itsdangerous) |
 | Jinja2 | BSD-3-Clause | [Pallets](https://github.com/pallets/jinja) |
 | MarkupSafe | BSD-3-Clause | [Pallets](https://github.com/pallets/markupsafe) |
-| packaging | Apache-2.0 或 BSD-2-Clause | [PyPA](https://github.com/pypa/packaging) |
 | Werkzeug | BSD-3-Clause | [Pallets](https://github.com/pallets/werkzeug) |
