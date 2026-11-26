@@ -2,7 +2,11 @@
 
 Orbit Portal 是一个可自托管、可玩的星球导航页。把应用放上轨道，通过目录搜索，也可以触发流星、穿梭星空和创建星球。示例目录包含 Google、YouTube、GitHub、Wikipedia 等公开链接。
 
-[下载演示视频（MP4）](https://github.com/Skyrain-Young/orbit-portal/releases/download/demo-video/Orbit-Portal-Demo-Final.mp4)
+## 演示视频
+
+https://github.com/user-attachments/assets/959c293a-de7e-4f76-bcb2-4a8ef68f77cd
+
+[下载 1080p 原版（MP4）](https://github.com/Skyrain-Young/orbit-portal/releases/download/demo-video/Orbit-Portal-Demo-Final.mp4)
 
 ## 本地启动
 
