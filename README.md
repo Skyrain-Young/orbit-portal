@@ -51,6 +51,8 @@ Compose 默认只在本机监听 `127.0.0.1:8080`，数据存放在 `orbit-data`
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-## 第三方声明
+## 许可证
 
-星球贴图、字体和运行依赖的来源及许可证见第三方声明。 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+Orbit Portal 的代码和原创文档采用 MIT 许可证。 [LICENSE](LICENSE)
+
+星球贴图、字体和运行依赖各自适用上游许可证。 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
