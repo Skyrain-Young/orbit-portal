@@ -51,7 +51,6 @@ Compose 默认只在本机监听 `127.0.0.1:8080`，数据存放在 `orbit-data`
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-## 素材署名
+## 第三方声明
 
-- 星球贴图来自 Solar System Scope / INOVE，使用 CC BY 4.0，包括适配球面投影、光照和大气效果后的图像。[来源和生成方式](web/portal/textures/README.md)
-- 标题字体取自霞鹜文楷 LXGW WenKai Regular v1.250，保留标题所需字形，使用 SIL Open Font License 1.1。[字体来源](https://github.com/lxgw/LxgwWenKai/releases/tag/v1.250) · [许可证](web/portal/OFL.txt)
+星球贴图、字体和运行依赖的来源及许可证见第三方声明。 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
