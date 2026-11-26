@@ -1,4 +1,4 @@
-"""DIO-Space 0.1.0 — self-hosted application portal."""
+"""Orbit Portal — a self-hosted application portal."""
 import argparse
 import csv
 import fcntl
@@ -93,6 +93,11 @@ def validate(data):
     site = data.get('site', {})
     if not isinstance(site, dict) or not isinstance(site.get('title'),str) or not 1 <= len(site['title'].strip()) <= 60 or not isinstance(site.get('motion'),bool):
         raise ValueError('站点名称或动效设置无效')
+    if 'logoText' in site:
+        logo_text = site['logoText']
+        if not isinstance(logo_text, str) or len(logo_text.strip()) > 60:
+            raise ValueError('Logo 文字最多 60 个字符')
+        site['logoText'] = logo_text.strip()
     chance = site.get('starfallCriticalChance', 5)
     if type(chance) not in (int, float) or not 0 <= chance <= 100 or not math.isfinite(chance):
         raise ValueError('Starfall 暴击率需要为 0–100 之间的数字')
