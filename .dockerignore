@@ -1,0 +1,12 @@
+**
+!requirements.txt
+!server.py
+!usage.py
+!players.py
+!galaxies.py
+!web/
+!web/catalog.json
+!web/admin/
+!web/admin/**
+!web/portal/
+!web/portal/**

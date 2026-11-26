@@ -1,0 +1,212 @@
+/* ORBIT — a quiet interface inside a moving solar system. */
+.orbit-layout {
+  --orbit-focus-x:65vw;
+  --orbit-focus-y:53vh;
+  --orbit-focus-tone:177,214,255;
+  --orbit-camera:1;
+  --list-progress:0;
+  position:relative;
+  min-height:max(680px,100svh);
+  overflow:clip;
+  color:#edf1ff;
+}
+.orbit-scene { position:relative; height:100svh; min-height:680px; isolation:isolate; }
+.orbit-heading { position:absolute; left:6.5%; top:34%; z-index:3; pointer-events:none; transition:opacity .8s,translate 1.1s cubic-bezier(.2,.7,.2,1); }
+.orbit-heading h1 { margin:0; display:flex; flex-direction:column; align-items:flex-start; }
+.orbit-dio { position:relative; display:block; font:300 clamp(100px,11.3vw,174px)/.9 system-ui,sans-serif; letter-spacing:-.09em; }
+.orbit-axis { display:inline-block; }
+.orbit-layout-toggle { position:relative; padding:0; border:0; background:none; color:inherit; pointer-events:auto; isolation:isolate; -webkit-tap-highlight-color:transparent; }
+.orbit-layout-toggle::before { content:""; position:absolute; inset:-30px; z-index:-1; pointer-events:none; background:radial-gradient(ellipse,#a8d8ff20,transparent 68%); filter:blur(15px); opacity:0; transition:opacity .5s; }
+.orbit-layout-toggle .orbit-dio { filter:drop-shadow(0 0 0 transparent); transition:filter .5s; }
+.orbit-layout-toggle:is(:hover,:focus-visible)::before { opacity:1; }
+.orbit-layout-toggle:is(:hover,:focus-visible) .orbit-dio { filter:drop-shadow(0 0 14px #c4e8ff55); }
+.orbit-layout-toggle:focus-visible { outline:1px solid #c4e8ff80; outline-offset:16px; border-radius:8px; }
+.orbit-space {
+  margin:7px 0 0 32px;
+  font:400 clamp(52px,6.1vw,90px)/1.12 "Mist Hand","Bradley Hand",cursive;
+  letter-spacing:-.05em; color:#c6d1eb; transform:rotate(-8deg);
+}
+.orbit-layout[data-focused] .orbit-heading { opacity:.25; translate:-18px 0; }
+/* Keep the track layer stable as the camera returns to its untransformed overview. */
+.orbit-paths { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; z-index:1; transform-origin:0 0; will-change:transform; }
+.orbit-paths :is(ellipse,path) { fill:none; vector-effect:non-scaling-stroke; stroke-width:.8; transition:stroke .6s,opacity .6s; }
+.orbit-track--wide { stroke:url(#orbit-line); opacity:.8; }
+.orbit-track--cross { stroke:#aebbe0; opacity:.17; }
+.orbit-track--inner { stroke:#b3dbec; opacity:.2; }
+.orbit-layout[data-focused] .orbit-paths :is(ellipse,path) { opacity:.13; }
+.orbit-layout[data-focused] .orbit-paths [data-active="true"] { stroke:rgba(var(--orbit-focus-tone),.7); stroke-width:1.15; opacity:.9; }
+.orbit-layout[data-view="list"] .orbit-track { stroke:#a8c3e5; opacity:.25; }
+.orbit-layout[data-view="list"] .orbit-track[data-active="true"] { stroke:#d3e9ff; opacity:.65; }
+.orbit-trail { fill:none; stroke:rgba(192,219,255,.32); stroke-width:1.2; stroke-linecap:round; vector-effect:non-scaling-stroke; }
+.orbit-atmosphere { position:absolute; inset:0; pointer-events:none; z-index:0; opacity:0; transition:opacity 1s; }
+.orbit-atmosphere::before {
+  content:""; position:absolute; left:var(--orbit-focus-x); top:var(--orbit-focus-y);
+  width:min(70vw,950px); aspect-ratio:1; border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(var(--orbit-focus-tone),.12),rgba(var(--orbit-focus-tone),.025) 36%,transparent 66%);
+  transform:translate(-50%,-50%) scale(var(--orbit-camera));
+}
+.orbit-atmosphere::after { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at var(--orbit-focus-x) var(--orbit-focus-y),transparent 15%,#03061060 100%); }
+.orbit-layout[data-focused] .orbit-atmosphere { opacity:1; }
+.orbit-constellation { position:absolute; inset:0; z-index:4; pointer-events:none; }
+.orbit-satellite {
+  --orbit-size:62px; --orbit-tone:177,214,255;
+  position:absolute; left:0; top:0; width:0; height:0; z-index:2;
+  will-change:transform;
+}
+.orbit-satellite--core { --orbit-size:108px; --orbit-tone:156,232,220; }
+.orbit-satellite--git { --orbit-size:76px; --orbit-tone:239,202,198; }
+.orbit-satellite--doc { --orbit-size:68px; --orbit-tone:177,214,255; }
+.orbit-satellite--week { --orbit-size:63px; --orbit-tone:233,212,176; }
+.orbit-satellite--flow { --orbit-size:53px; --orbit-tone:222,189,236; }
+.orbit-satellite--gpu { --orbit-size:54px; --orbit-tone:178,207,247; }
+.orbit-satellite--bi { --orbit-size:58px; --orbit-tone:177,214,255; }
+.orbit-satellite--seek { --orbit-size:48px; --orbit-tone:182,205,255; }
+.orbit-app {
+  position:absolute; top:calc(var(--planet-size,var(--orbit-size)) / -2); left:calc(var(--planet-size,var(--orbit-size)) / -2);
+  width:var(--app-width,var(--orbit-size)); height:var(--app-height,auto); display:flex; flex-direction:column; align-items:flex-start; gap:12px;
+  color:inherit; text-decoration:none; pointer-events:auto; outline-offset:9px;
+  transition:opacity .65s;
+}
+.orbit-lens {
+  display:grid; place-items:center; flex-shrink:0;
+  width:var(--planet-size,var(--orbit-size)); height:var(--planet-size,var(--orbit-size)); border-radius:50%;
+  position:relative; color:rgb(var(--orbit-tone));
+  border:1px solid rgba(var(--orbit-tone),.32);
+  background:radial-gradient(circle at 28% 13%,rgba(var(--orbit-tone),.18),transparent 52%),linear-gradient(155deg,#a9bdff08,#0c112978);
+  box-shadow:inset 0 1px 2px #edfbff40,inset -8px -12px 22px #02041180,0 14px 32px #01030c30;
+  backdrop-filter:blur(10px);
+  transition:border-color .6s,color .6s;
+}
+.orbit-lens > svg { width:calc(var(--planet-size,var(--orbit-size)) * .34); height:calc(var(--planet-size,var(--orbit-size)) * .34); stroke-width:1.05; }
+.orbit-lens::before,.orbit-lens::after { content:""; position:absolute; border-radius:50%; pointer-events:none; transition:opacity .8s,transform 1.2s cubic-bezier(.2,.7,.2,1); }
+.orbit-lens::before { inset:-18px; border:1px solid rgba(var(--orbit-tone),.25); opacity:0; transform:scale(.8); }
+/* Paint the full glow once; hover only composites opacity and scale. */
+.orbit-lens::after {
+  inset:0; opacity:0; transform:scale(.9);
+  background:radial-gradient(circle at 28% 13%,rgba(var(--orbit-tone),.18),transparent 52%),linear-gradient(155deg,#a9bdff08,#0c112978);
+  box-shadow:inset 0 1px 3px #edfbff9a,inset -8px -12px 22px #02041170,0 0 36px rgba(var(--orbit-tone),.22),0 0 100px rgba(var(--orbit-tone),.08);
+}
+.orbit-satellite--core .orbit-lens::before { inset:-13px; opacity:.25; transform:scale(1); }
+.orbit-app-name { white-space:nowrap; font-size:11px; font-weight:450; color:#bdc7dd; letter-spacing:.015em; transition:color .6s; }
+.orbit-satellite--core .orbit-app-name { font-size:15px; color:#d1ece9; letter-spacing:-.015em; }
+.orbit-satellite .orbit-app-name { position:absolute; left:var(--label-x,50%); top:var(--label-y,100%); font-size:var(--label-size,11px); line-height:1.4; max-width:var(--label-width); overflow:hidden; text-overflow:ellipsis; transform:translate(calc(-50% * (1 - var(--list-progress))),calc(-50% * var(--list-progress))); }
+.orbit-layout[data-focused] .orbit-satellite:not([data-active="true"]) .orbit-app { opacity:.34; }
+.orbit-satellite[data-active="true"] { z-index:5; }
+.orbit-satellite[data-active="true"] .orbit-lens {
+  border-color:rgba(var(--orbit-tone),.8); color:#f2fbff;
+}
+.orbit-satellite[data-active="true"] .orbit-lens::before { opacity:.7; transform:scale(1.15); }
+.orbit-satellite[data-active="true"] .orbit-lens::after { opacity:1; transform:scale(1); }
+.orbit-satellite[data-active="true"] .orbit-app-name { color:#f0f7ff; }
+/* Freeze the decorative CSS layers alongside the canvas through camera return. */
+#prototype:has(.orbit-layout[data-background-paused]) .mist-wash,
+#prototype:has(.orbit-layout[data-background-paused]) .mist-light::after { animation-play-state:paused; }
+@media(min-width:1600px) { .orbit-heading { left:8%; } }
+@media(max-width:1000px) and (min-width:761px) {
+  .orbit-heading { left:5%; top:36%; }
+  .orbit-dio { font-size:100px; }
+  .orbit-space { font-size:56px; margin-left:20px; }
+  .orbit-satellite--core { --orbit-size:82px; }
+  .orbit-satellite--git { --orbit-size:61px; }
+  .orbit-satellite--doc { --orbit-size:55px; }
+  .orbit-satellite--week { --orbit-size:52px; }
+  .orbit-satellite--flow { --orbit-size:49px; }
+  .orbit-satellite--gpu { --orbit-size:50px; }
+  .orbit-satellite--bi { --orbit-size:54px; }
+  .orbit-satellite--seek { --orbit-size:44px; }
+}
+@media(max-width:760px) {
+  .orbit-layout,.orbit-scene { min-height:780px; }
+  .orbit-heading { left:8%; top:12%; }
+  .orbit-dio { font-size:96px; }
+  .orbit-space { font-size:53px; margin:0 0 0 26px; }
+  .orbit-satellite--core { --orbit-size:74px; }
+  .orbit-satellite--git { --orbit-size:56px; }
+  .orbit-satellite--doc { --orbit-size:52px; }
+  .orbit-satellite--week { --orbit-size:51px; }
+  .orbit-satellite--flow,.orbit-satellite--gpu { --orbit-size:44px; }
+  .orbit-satellite--bi { --orbit-size:47px; }
+  .orbit-satellite--seek { --orbit-size:43px; }
+  .orbit-app { gap:9px; }
+  .orbit-app-name { font-size:10px; }
+  .orbit-satellite--core .orbit-app-name { font-size:13px; }
+  .orbit-atmosphere::before { width:120vw; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .orbit-heading,.orbit-app,.orbit-lens,.orbit-lens::before,.orbit-lens::after,.orbit-app-name,.orbit-atmosphere,.orbit-layout-toggle::before,.orbit-layout-toggle .orbit-dio,
+  #prototype[data-layout="orbit"] .mist-wash { transition:none; }
+  #prototype[data-layout="orbit"]:has(.orbit-layout[data-focused]) .mist-wash { scale:1; }
+}
+.motion-off .orbit-layout-toggle::before,.motion-off .orbit-layout-toggle .orbit-dio { transition:none; }
+.orbit-paths .orbit-trail { stroke-dasharray:8 92; stroke-width:1.1; opacity:.6; transition:stroke .6s; }
+#layout-stage .orbit-app:focus-visible { outline:none; }
+#layout-stage .orbit-app:focus-visible .orbit-lens { outline:1px solid rgba(var(--orbit-tone),.75); outline-offset:8px; }
+#layout-stage .orbit-app:focus-visible .orbit-app-name { text-decoration:underline; text-underline-offset:5px; }
+
+@media(max-width:360px), (min-width:621px) and (max-width:760px) {
+  .orbit-satellite { --orbit-size:42px; }
+  .orbit-satellite--core { --orbit-size:62px; }
+  .orbit-app { gap:6px; }
+  .orbit-app-name { font-size:9px; }
+  .orbit-satellite--core .orbit-app-name { font-size:11px; }
+}
+
+/* Circular central halo; positioned by the same camera as the orbital geometry. */
+.orbit-blackhole{position:absolute;left:0;top:0;width:360px;height:240px;pointer-events:none;z-index:2;transition:opacity .4s}
+.orbit-blackhole[hidden]{display:none}
+.orbit-blackhole canvas{display:block;width:100%;height:100%;position:relative}
+.orbit-blackhole canvas[hidden]{display:none}
+.orbit-blackhole button,.orbit-blackhole-fallback{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:34.1%;aspect-ratio:1;border-radius:50%}
+.orbit-blackhole-fallback{background:#000;box-shadow:0 -1px 1px #e6debd,0 0 8px 4px #53658e55}
+.orbit-blackhole button{width:auto;border:0;background:transparent;padding:0;pointer-events:auto;cursor:pointer;min-width:44px;min-height:44px}
+.orbit-blackhole button:focus-visible{outline:1px solid #c9dcf5;outline-offset:5px}
+.orbit-layout[data-focused] .orbit-blackhole{opacity:.25}
+@media(max-width:760px){.orbit-blackhole{width:270px;height:190px}}
+@media(prefers-reduced-motion:reduce){.orbit-blackhole{transition:none}}
+.orbit-blackhole:has(canvas[data-renderer="webgl-circular-halo"]) .orbit-blackhole-fallback{display:none}
+.orbit-blackhole>.galaxy-menu{position:absolute;top:calc(50% + 46px);left:50%;transform:translate(-50%,8px);display:flex;gap:3px;padding:7px;border:1px solid #b7c9ec30;border-radius:24px;background:#10182ce8;backdrop-filter:blur(16px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s,transform .16s,visibility .16s;z-index:5;width:max-content}
+.galaxy-menu::before{content:'';position:absolute;left:0;right:0;top:-30px;height:30px;pointer-events:auto}
+.orbit-blackhole:hover .galaxy-menu,.orbit-blackhole:focus-within .galaxy-menu,.orbit-blackhole[data-menu-open] .galaxy-menu{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0)}
+.orbit-blackhole .galaxy-menu button{position:static;transform:none;aspect-ratio:auto;height:auto;min-width:0;min-height:36px;padding:6px 13px;color:#adbbd5;font:12px system-ui;white-space:nowrap;border-radius:20px}
+.orbit-blackhole .galaxy-menu button:hover{color:#fff;background:#c5d6ff14}.orbit-blackhole .galaxy-menu button[aria-current=true]{color:#f1e3bd;background:#e3d0a512;cursor:default}
+.orbit-satellite--extra1,.orbit-satellite--extra2{--orbit-size:48px;--orbit-tone:177,214,255}
+.orbit-vacancy .orbit-lens{background:radial-gradient(circle,#a1c8ff16,#a1c8ff04)!important;border:1.25px dashed #b6d4ffa6;box-shadow:0 0 18px #a1c8ff14,inset 0 0 12px #a1c8ff0c;opacity:.9;transition:opacity .25s,border .25s}
+.orbit-vacancy:hover .orbit-lens,.orbit-vacancy:focus-visible .orbit-lens{opacity:1;border-color:#d0e4ffa6}
+.orbit-plus{position:absolute;inset:0;display:grid;place-items:center;color:#c6dcfa;font-size:18px;opacity:.7;transition:opacity .2s}.orbit-vacancy:hover .orbit-plus,.orbit-vacancy:focus-visible .orbit-plus{opacity:1}
+.orbit-vacancy .orbit-lens::before,.orbit-vacancy .orbit-lens::after{display:none}
+.galaxy-whitehole canvas{filter:brightness(3) saturate(.2);transition:filter .2s}
+.orbit-layout[data-galaxy-travel] .orbit-app{pointer-events:none}
+.orbit-layout[data-galaxy-travel] .galaxy-menu{opacity:0;visibility:hidden;pointer-events:none}
+.orbit-layout[data-galaxy-travel] .orbit-blackhole{z-index:6}
+.galaxy-vortex{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}
+.orbit-scene[data-vortex] .orbit-paths,.orbit-scene[data-vortex] .orbit-constellation{visibility:hidden}
+.galaxy-add{width:min(380px,calc(100vw - 40px));padding:24px;border:1px solid #b9c8e42a;border-radius:22px;background:#101829f5;color:#d1dcef;box-shadow:0 24px 100px #0009;font:14px system-ui}
+.galaxy-add::backdrop{background:#05081399;backdrop-filter:blur(5px)}.galaxy-add header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.galaxy-add h2{font-size:18px;font-weight:500;margin:0}
+.galaxy-add button{font:inherit;cursor:pointer;border:0;color:inherit;background:none}.galaxy-add header button{font-size:24px}.galaxy-add-tabs{display:flex;gap:8px;margin-bottom:18px}.galaxy-add-tabs button{padding:8px 10px;border-radius:20px;color:#8e9db8}.galaxy-add-tabs [aria-pressed=true]{background:#bacfff15;color:#e1eafa}
+.galaxy-add input,.galaxy-add select{box-sizing:border-box;width:100%;padding:12px;margin-bottom:12px;border:1px solid #c1d4f32a;border-radius:10px;background:#0b1120;color:#e1e9f7;font:inherit}.galaxy-add p{min-height:18px;font-size:12px;color:#edb2a5}.galaxy-add .galaxy-add-submit{width:100%;padding:12px;border-radius:12px;background:#d8e6fc;color:#162037}.galaxy-add button:disabled{opacity:.4;cursor:wait}.galaxy-add [hidden]{display:none}
+.galaxy-birth{animation:galaxy-birth .8s cubic-bezier(.2,.8,.3,1)}@keyframes galaxy-birth{0%{filter:brightness(8) blur(8px);scale:.1;opacity:0}35%{filter:brightness(4) blur(2px);scale:1.3}100%{filter:none;scale:1;opacity:1}}
+@media(max-width:760px){.orbit-blackhole .galaxy-menu button{padding:5px 9px}.orbit-blackhole>.galaxy-menu{top:calc(50% + 38px)}}
+@media(prefers-reduced-motion:reduce){.galaxy-birth{animation:none}.galaxy-menu,.orbit-vacancy .orbit-lens{transition:none}}
+
+.orbit-blackhole:hover,.orbit-blackhole:focus-within,.orbit-blackhole[data-menu-open]{z-index:10}
+
+.orbit-replace{position:absolute;left:calc(var(--planet-size,var(--orbit-size)) / 2 + 12px);top:calc(var(--planet-size,var(--orbit-size)) / -2);padding:7px 13px;min-height:32px;border:1px solid #b7c9ec30;border-radius:20px;background:#10182ce8;backdrop-filter:blur(16px);color:#c5d3e9;font:12px system-ui;white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s,visibility .16s;z-index:6}
+.orbit-replace::before{content:'';position:absolute;right:100%;top:-8px;bottom:-8px;width:16px}
+.orbit-satellite:hover .orbit-replace,.orbit-satellite:focus-within .orbit-replace{opacity:1;visibility:visible;pointer-events:auto}
+.orbit-replace:hover,.orbit-replace:focus-visible{color:#fff;background:#22304bea;border-color:#c5d6ff66}
+.orbit-replace[hidden],.orbit-layout[data-galaxy-travel] .orbit-replace,.orbit-layout[data-transitioning] .orbit-replace{display:none}
+@media(prefers-reduced-motion:reduce){.orbit-replace{transition:none}}
+
+.orbit-replace[data-side=left]{left:auto;right:calc(var(--planet-size,var(--orbit-size)) / 2 + 12px)}
+.orbit-replace[data-side=left]::before{right:auto;left:100%}
+.orbit-layout[data-view=list] .orbit-replace{left:calc(var(--app-width) - var(--planet-size) / 2 - 60px);right:auto}
+
+.orbit-layout[data-transitioning] .orbit-app{pointer-events:none}
+.orbit-layout[data-view=list] .orbit-satellite:has(.orbit-replace:not([hidden])):is(:hover,:focus-within) .orbit-app-name{max-width:max(20px,calc(var(--label-width) - 62px))}
+
+/* The list shares the same black hole, anchored above its first column. */
+.orbit-layout[data-view=list] .orbit-blackhole{width:210px;height:140px}
+.orbit-layout[data-view=list] .galaxy-menu{left:calc(50% + 44px);top:50%;transform:translate(8px,-50%)}
+.orbit-layout[data-view=list] .orbit-blackhole:is(:hover,:focus-within,[data-menu-open]) .galaxy-menu{transform:translate(0,-50%)}
+.orbit-layout[data-view=list] .galaxy-menu::before{left:-30px;right:auto;top:0;width:30px;height:100%}
+@media(max-width:380px){.orbit-layout[data-view=list] .galaxy-menu{left:calc(50% + 36px)}.orbit-layout[data-view=list] .galaxy-menu button{padding-inline:8px}}

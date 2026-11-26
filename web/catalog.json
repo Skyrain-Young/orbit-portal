@@ -1,0 +1,115 @@
+{
+  "groups": {
+    "business": "日常工具",
+    "dev": "开发资源",
+    "external": "内容与知识"
+  },
+  "apps": [
+    {
+      "id": "google",
+      "name": "Google",
+      "url": "https://www.google.com/",
+      "group": "business",
+      "glyph": "layers",
+      "surface": "core",
+      "aliases": "谷歌 搜索 search"
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "url": "https://www.youtube.com/",
+      "group": "external",
+      "glyph": "wave",
+      "surface": "git",
+      "aliases": "视频 video"
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "url": "https://github.com/",
+      "group": "dev",
+      "glyph": "git",
+      "surface": "doc",
+      "aliases": "代码 仓库 code"
+    },
+    {
+      "id": "wikipedia",
+      "name": "Wikipedia",
+      "url": "https://www.wikipedia.org/",
+      "group": "external",
+      "glyph": "doc",
+      "surface": "week",
+      "aliases": "维基百科 wiki"
+    },
+    {
+      "id": "google-maps",
+      "name": "Google Maps",
+      "url": "https://maps.google.com/",
+      "group": "business",
+      "glyph": "flow",
+      "surface": "flow",
+      "aliases": "谷歌地图 maps"
+    },
+    {
+      "id": "mdn",
+      "name": "MDN Web Docs",
+      "url": "https://developer.mozilla.org/",
+      "group": "dev",
+      "glyph": "terminal",
+      "surface": "gpu",
+      "aliases": "前端文档 HTML CSS JavaScript"
+    },
+    {
+      "id": "openstreetmap",
+      "name": "OpenStreetMap",
+      "url": "https://www.openstreetmap.org/",
+      "group": "business",
+      "glyph": "gate",
+      "surface": "bi",
+      "aliases": "地图 OSM"
+    },
+    {
+      "id": "internet-archive",
+      "name": "Internet Archive",
+      "url": "https://archive.org/",
+      "group": "external",
+      "glyph": "report",
+      "surface": "seek",
+      "aliases": "互联网档案馆 Wayback Machine"
+    },
+    {
+      "id": "gutenberg",
+      "name": "Project Gutenberg",
+      "url": "https://www.gutenberg.org/",
+      "group": "external",
+      "glyph": "doc",
+      "aliases": "古登堡计划 电子书 ebooks"
+    },
+    {
+      "id": "python-docs",
+      "name": "Python Docs",
+      "url": "https://docs.python.org/3/",
+      "group": "dev",
+      "glyph": "terminal",
+      "aliases": "Python 文档"
+    }
+  ],
+  "slots": {
+    "core": "google",
+    "git": "youtube",
+    "doc": "github",
+    "week": "wikipedia",
+    "flow": "google-maps",
+    "gpu": "mdn",
+    "bi": "openstreetmap",
+    "seek": "internet-archive"
+  },
+  "site": {
+    "title": "DIO-Space",
+    "motion": true,
+    "starfallCriticalChance": 5,
+    "starDensity": 40,
+    "meteorIntervalMin": 10,
+    "meteorIntervalMax": 15
+  }
+}
