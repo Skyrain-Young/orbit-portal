@@ -85,14 +85,24 @@ def register_players(app, database, csrf, critical_chance=lambda: 5, background_
         db.execute('UPDATE meteor_bursts SET points=count WHERE points IS NULL')
         db.execute('CREATE INDEX IF NOT EXISTS meteor_source_time ON meteor_bursts(player,source,at)')
     api=Blueprint('players',__name__)
-    signer=URLSafeTimedSerializer(app.secret_key,salt='dio-browser-player-v1')
-    burst_signer=URLSafeTimedSerializer(app.secret_key,salt='dio-starfall-burst-v1')
+    signer=URLSafeTimedSerializer(app.secret_key,salt='orbit-browser-player-v1')
+    burst_signer=URLSafeTimedSerializer(app.secret_key,salt='orbit-starfall-burst-v1')
 
+    player_cookie='orbit_player'
+    previous_cookie='dio_player'
+    # Accept existing browser identities and signed events during the rename.
+    previous_signer=URLSafeTimedSerializer(app.secret_key,salt='dio-browser-player-v1')
+    previous_burst_signer=URLSafeTimedSerializer(app.secret_key,salt='dio-starfall-burst-v1')
     cookie_lifetime=365*86400
 
     def browser_player():
+        cookie=request.cookies.get(player_cookie)
+        reader=signer
+        if cookie is None:
+            cookie=request.cookies.get(previous_cookie,'')
+            reader=previous_signer
         try:
-            pid=signer.loads(request.cookies.get('dio_player',''),max_age=cookie_lifetime)
+            pid=reader.loads(cookie,max_age=cookie_lifetime)
         except BadSignature:
             return None
         return pid if isinstance(pid,str) else None
@@ -102,8 +112,11 @@ def register_players(app, database, csrf, critical_chance=lambda: 5, background_
 
     def player_response(pid,result,**fields):
         response=jsonify(**result,**fields)
-        response.set_cookie('dio_player',signer.dumps(pid),max_age=cookie_lifetime,httponly=True,
-                            secure=app.config['SESSION_COOKIE_SECURE'],samesite='Strict')
+        secure=app.config['SESSION_COOKIE_SECURE']
+        response.set_cookie(player_cookie,signer.dumps(pid),max_age=cookie_lifetime,
+                            httponly=True,secure=secure,samesite='Strict')
+        if previous_cookie in request.cookies:
+            response.delete_cookie(previous_cookie,httponly=True,secure=secure,samesite='Strict')
         return response
 
     def profile(db,pid):
@@ -128,7 +141,10 @@ def register_players(app, database, csrf, critical_chance=lambda: 5, background_
             db.execute('BEGIN')
             pid=current(db)
             if pid:
-                return jsonify(**profile(db,pid),csrf=csrf())
+                result=profile(db,pid)
+                if player_cookie not in request.cookies:
+                    return player_response(pid,result,csrf=csrf())
+                return jsonify(**result,csrf=csrf())
 
         with closing(sqlite3.connect(database)) as db, db:
             db.execute('BEGIN IMMEDIATE')
@@ -204,9 +220,13 @@ def register_players(app, database, csrf, critical_chance=lambda: 5, background_
             token=data['token']
             if not isinstance(token,str) or len(token)>2048:
                 return jsonify(error='星链凭证无效，请重新蓄光'),400
-            try:
-                claim=burst_signer.loads(token,max_age=86400)
-            except BadSignature:
+            for token_signer in (burst_signer,previous_burst_signer):
+                try:
+                    claim=token_signer.loads(token,max_age=86400)
+                except BadSignature:
+                    continue
+                break
+            else:
                 return jsonify(error='星链凭证已失效，请重新蓄光'),400
             if (not isinstance(claim,dict) or not isinstance(claim.get('player'),str) or
                 claim.get('count')!=count or claim.get('event')!=event or type(claim.get('critical')) is not bool):

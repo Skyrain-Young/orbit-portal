@@ -4,9 +4,10 @@ const path = require('node:path');
 const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '..', 'web', 'portal', 'portal.js'), 'utf8');
 
-function portal({motion = true, reduced = false, failure = false} = {}) {
+function portal({motion = true, reduced = false, failure = false, previousVisitor = null} = {}) {
   const listeners = {}, rootListeners = {}, windowListeners = {}, stage = {inert: true}, layout = {}, errorButton = {};
   const calls = {opened: 0, paid: 0, stopped: 0};
+  const storage = new Map([['dio-visitor', previousVisitor]]);
   const attributes = new Set(['aria-busy']);
   const root = {
     dataset: {arrival: 'waiting'}, classList: {toggle() {}}, innerHTML: '',
@@ -27,12 +28,16 @@ function portal({motion = true, reduced = false, failure = false} = {}) {
   const catalogReady = new Promise(resolve => {resolveCatalog = resolve;});
   const sandbox = {
     document, matchMedia: () => ({matches: reduced}),
-    localStorage: {getItem() {}, setItem() {}}, crypto: require('node:crypto').webcrypto,
+    localStorage: {getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value)}, crypto: require('node:crypto').webcrypto,
     location: {reload() {}},
-    fetch: async url => url === '/api/catalog' ? catalogReady : {ok: true, json: async()=>({layouts:{main:{}}})},
+    fetch: async (url, options) => {
+      if (url === '/api/catalog') return catalogReady;
+      if (url === '/api/events') calls.event = JSON.parse(options.body);
+      return {ok: true, json: async () => ({layouts:{main:{}}})};
+    },
     window: {
       createLayoutCatalog: () => ({dialog: {open: false}, open() {calls.opened++;}}),
-      dioLayouts: {orbit: options => {calls.orbit = options; return stop;}},
+      portalLayouts: {orbit: options => {calls.orbit = options; return stop;}},
       mountPortalPlayer: () => ({identityReady: Promise.resolve(), prepare() {}, record() {}, recordBackground() {}, warp() {calls.paid++;}, stop}),
       mountPlanetSurfaces: () => stop,
       mountPortalUsage: () => usage,
@@ -41,8 +46,8 @@ function portal({motion = true, reduced = false, failure = false} = {}) {
     },
   };
   const completion = vm.runInNewContext(source, sandbox);
-  return {root, stage, calls, completion, attributes,
-    load() {resolveCatalog({ok: !failure, json: async () => ({apps: [], groups: {}, slots: {}, site: {title: 'DIO-Space', motion}})});},
+  return {root, stage, calls, completion, attributes, storage,
+    load() {resolveCatalog({ok: !failure, json: async () => ({apps: [], groups: {}, slots: {}, site: {title: 'Orbit Portal', motion}})});},
     key(target = {closest() {}}) {for (const listener of listeners.keydown ?? []) listener({key: ' ', code: 'Space', target, preventDefault() {}});},
     click(control, detail) {document.activeElement = control; for (const listener of rootListeners.click ?? []) listener({target: {closest: () => control}, detail});},
     leave() {for (const listener of windowListeners.pagehide ?? []) listener({persisted: false});},
@@ -50,10 +55,13 @@ function portal({motion = true, reduced = false, failure = false} = {}) {
 }
 
 async function main() {
-  const h = portal();
+  const previousVisitor = 'a'.repeat(32);
+  const h = portal({previousVisitor});
   assert.equal(h.root.dataset.arrival, 'waiting'); assert.equal(h.stage.inert, true);
   assert.equal(h.calls.opened, 0, 'loading never exposes or activates homepage controls');
   h.load(); await h.completion;
+  assert.equal(h.storage.get('orbit-visitor'), previousVisitor, 'existing visitor IDs survive the rename');
+  assert.equal(h.calls.event.visitor, previousVisitor);
   assert.equal(h.root.dataset.arrival, 'travel'); assert.equal(h.stage.inert, true);
   assert.equal(h.calls.stars.arrival, true, 'the background receives a decorative arrival request');
   h.key(); assert.equal(h.calls.opened, 0, 'keyboard shortcuts stay blocked during arrival');

@@ -26,7 +26,7 @@ function setup(initialNames=names) {
   };
   let closes = 0;
   const sandbox = {
-    window: {dioPlanetStyles:JSON.parse(fs.readFileSync(path.join(portal,'textures/planet-library.json'),'utf8'))}, AbortController,
+    window: {portalPlanetStyles:JSON.parse(fs.readFileSync(path.join(portal,'textures/planet-library.json'),'utf8'))}, AbortController,
     document: {createElement(tag) {assert.equal(tag,'canvas');const canvas=makeCanvas();cachedSurfaces.push(canvas);return canvas;}},
     fetch: (url, options) => new Promise((resolve, reject) => requests.push({url, options, resolve, reject})),
     createImageBitmap: async () => ({closed:false,close() { this.closed=true;closes++; }}),

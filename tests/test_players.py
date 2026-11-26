@@ -36,6 +36,26 @@ class PlayersTest(unittest.TestCase):
         self.assertEqual(other.patch('/api/player',json={'name':' 星际旅人７ '},headers={'X-CSRF-Token':token}).status_code,200)
         self.assertEqual(other.get('/api/player').json['name'],'星际旅人7')
         self.assertEqual(self.c.patch('/api/player',json={'name':'<script>'},headers=self.headers).status_code,400)
+    def test_previous_player_cookie_and_pending_burst_survive_rename(self):
+        self.c.patch('/api/player',json={'name':'Original Pilot'},headers=self.headers)
+        signer=URLSafeTimedSerializer(self.app.secret_key,salt='orbit-browser-player-v1')
+        pid=signer.loads(self.c.get_cookie('orbit_player').value)
+        previous_signer=URLSafeTimedSerializer(self.app.secret_key,salt='dio-browser-player-v1')
+        client=self.app.test_client()
+        client.set_cookie('dio_player',previous_signer.dumps(pid))
+        profile=client.get('/api/player').json
+        self.assertEqual(profile['name'],'Original Pilot')
+        self.assertEqual(signer.loads(client.get_cookie('orbit_player').value),pid)
+        self.assertIsNone(client.get_cookie('dio_player'))
+
+        event={'event':'a'*32,'count':3}
+        previous_burst=URLSafeTimedSerializer(self.app.secret_key,salt='dio-starfall-burst-v1')
+        response=client.post('/api/player/meteors',
+                             json={**event,'token':previous_burst.dumps({**event,'player':pid,'critical':False})},
+                             headers={'X-CSRF-Token':profile['csrf']})
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(response.json['meteors'],3)
+
     def test_devices_share_balance_history_and_launches_after_name_selection(self):
         other=self.app.test_client()
         headers={'X-CSRF-Token':other.get('/api/player').json['csrf']}
@@ -90,7 +110,7 @@ class PlayersTest(unittest.TestCase):
         restored=folder/'restored'
         subprocess.run([sys.executable,'server.py','restore','--data-dir',str(restored),'--file',str(archive)],check=True,capture_output=True)
         client=create_app(restored).test_client()
-        client.set_cookie('dio_player',self.c.get_cookie('dio_player').value)
+        client.set_cookie('orbit_player',self.c.get_cookie('orbit_player').value)
         profile=client.get('/api/player').json
         self.assertEqual(profile['name'],self.profile['name'])
         self.assertEqual(profile['meteors'],3)
@@ -154,7 +174,7 @@ class PlayersTest(unittest.TestCase):
         folder=Path(self.tmp.name);archive=folder/'background.zip';backup(folder,archive)
         restored=folder/'restored'
         subprocess.run([sys.executable,'server.py','restore','--data-dir',str(restored),'--file',str(archive)],check=True,capture_output=True)
-        client=create_app(restored).test_client();client.set_cookie('dio_player',self.c.get_cookie('dio_player').value)
+        client=create_app(restored).test_client();client.set_cookie('orbit_player',self.c.get_cookie('orbit_player').value)
         profile=client.get('/api/player').json
         self.assertEqual(profile['meteors'],1)
         replay=client.post(endpoint,json=event,headers={'X-CSRF-Token':profile['csrf']}).json
@@ -230,10 +250,10 @@ class PlayersTest(unittest.TestCase):
 
     def test_concurrent_warps_cannot_overdraw_the_last_two_points(self):
         self.c.post('/api/player/meteors',json={'event':'a'*32,'count':2},headers=self.headers)
-        cookie=self.c.get_cookie('dio_player').value
+        cookie=self.c.get_cookie('orbit_player').value
         barrier=Barrier(2)
         def attempt(event):
-            client=self.app.test_client();client.set_cookie('dio_player',cookie)
+            client=self.app.test_client();client.set_cookie('orbit_player',cookie)
             headers={'X-CSRF-Token':client.get('/api/player').json['csrf']}
             barrier.wait(timeout=5)
             response=client.post('/api/player/warp',json={'event':event},headers=headers)
@@ -254,7 +274,7 @@ class PlayersTest(unittest.TestCase):
         folder=Path(self.tmp.name);archive=folder/'warp.zip';backup(folder,archive)
         restored=folder/'restored'
         subprocess.run([sys.executable,'server.py','restore','--data-dir',str(restored),'--file',str(archive)],check=True,capture_output=True)
-        client=create_app(restored).test_client();client.set_cookie('dio_player',self.c.get_cookie('dio_player').value)
+        client=create_app(restored).test_client();client.set_cookie('orbit_player',self.c.get_cookie('orbit_player').value)
         profile=client.get('/api/player').json
         self.assertEqual(profile['meteors'],3)
         self.assertEqual((profile['warpDistance'],profile['warpRank']),(1,1))
@@ -306,7 +326,7 @@ class PlayersTest(unittest.TestCase):
             self.assertNotIn('warpDistance',[row[1] for row in db.execute('PRAGMA table_info(players)')])
             ledger=db.execute('SELECT player,event,count,at,critical,points,source FROM meteor_bursts ORDER BY event').fetchall()
         restarted=create_app(Path(self.tmp.name)).test_client()
-        restarted.set_cookie('dio_player',self.c.get_cookie('dio_player').value)
+        restarted.set_cookie('orbit_player',self.c.get_cookie('orbit_player').value)
         profile=restarted.get('/api/player').json
         self.assertEqual((profile['meteors'],profile['warpDistance'],profile['warpRank']),(1,2,1))
         restarted.patch('/api/player',json={'name':'Voyager'},headers={'X-CSRF-Token':profile['csrf']})
@@ -375,7 +395,7 @@ class PlayersTest(unittest.TestCase):
 
     def test_expired_burst_does_not_score(self):
         burst=self.prepare()
-        signer=URLSafeTimedSerializer(self.app.secret_key,salt='dio-starfall-burst-v1')
+        signer=URLSafeTimedSerializer(self.app.secret_key,salt='orbit-starfall-burst-v1')
         claim=signer.loads(burst['token'])
         with patch('itsdangerous.timed.TimestampSigner.get_timestamp',return_value=int(time.time())-90000):
             burst['token']=signer.dumps(claim)
@@ -392,7 +412,7 @@ class PlayersTest(unittest.TestCase):
             db.execute('UPDATE players SET meteors=4 WHERE id=?',(pid,))
         # Repeated startup also verifies the migration is idempotent.
         app=create_app(Path(self.tmp.name));create_app(Path(self.tmp.name))
-        client=app.test_client();client.set_cookie('dio_player',self.c.get_cookie('dio_player').value)
+        client=app.test_client();client.set_cookie('orbit_player',self.c.get_cookie('orbit_player').value)
         profile=client.get('/api/player').json
         self.assertEqual(profile['meteors'],4)
         duplicate=client.post('/api/player/meteors',json={'count':4,'event':'a'*32},headers={'X-CSRF-Token':profile['csrf']}).json
@@ -406,7 +426,7 @@ class PlayersTest(unittest.TestCase):
         folder=Path(self.tmp.name);archive=folder/'critical.zip';backup(folder,archive)
         restored=folder/'restored'
         subprocess.run([sys.executable,'server.py','restore','--data-dir',str(restored),'--file',str(archive)],check=True,capture_output=True)
-        client=create_app(restored).test_client();client.set_cookie('dio_player',self.c.get_cookie('dio_player').value)
+        client=create_app(restored).test_client();client.set_cookie('orbit_player',self.c.get_cookie('orbit_player').value)
         profile=client.get('/api/player').json
         self.assertEqual(profile['meteors'],60)
         replay=client.post('/api/player/meteors',json=burst,headers={'X-CSRF-Token':profile['csrf']}).json

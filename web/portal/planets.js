@@ -7,7 +7,7 @@ window.mountPlanetSurfaces = (() => {
   // Keep decoded pixels independently of the short-lived ImageBitmaps and DOM
   // mounts. There are only thirty allowed surfaces (at most 7.5 MiB of RGBA pixels).
   const surfaces = new Map();
-  const tones=Object.fromEntries(window.dioPlanetStyles.map(style=>[style.id,style.tone]));
+  const tones=Object.fromEntries(window.portalPlanetStyles.map(style=>[style.id,style.tone]));
   return root => {
     const events = new AbortController();
     root.querySelectorAll('.planet-surface').forEach(canvas => {

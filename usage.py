@@ -1,4 +1,4 @@
-"""Serve the DIO portal and collect aggregate usage in a local SQLite database."""
+"""Serve Orbit Portal and collect aggregate usage in a local SQLite database."""
 
 import argparse
 import json

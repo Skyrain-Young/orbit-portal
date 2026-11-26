@@ -18,13 +18,13 @@
     if(arrival)root.dataset.arrival='travel';
     const catalog=window.createLayoutCatalog({apps,groups,link,escape});
     let stopStars;
-    const stopOrbit=window.dioLayouts.orbit({root:stage,apps,link,escape,onBackgroundPause:paused=>stopStars?.setPaused?.(paused),icon:window.dioPrototypeIcon,slots,site:{...site,planetScale:2/3,blackHole:true,galaxies,groups}});
+    const stopOrbit=window.portalLayouts.orbit({root:stage,apps,link,escape,onBackgroundPause:paused=>stopStars?.setPaused?.(paused),icon:window.portalIcon,slots,site:{...site,planetScale:2/3,blackHole:true,galaxies,groups}});
     const player=window.mountPortalPlayer(root.querySelector('.orbit-layout'),{escape});
     const refreshPlayer=()=>player.refresh?.();
-    root.addEventListener('dio:application-added',refreshPlayer);
+    root.addEventListener('orbit:application-added',refreshPlayer);
     let stopSurfaces=window.mountPlanetSurfaces(root);
     const refreshSurfaces=()=>{stopSurfaces?.();stopSurfaces=window.mountPlanetSurfaces(root);};
-    root.addEventListener('dio:surfaces',refreshSurfaces);
+    root.addEventListener('orbit:surfaces',refreshSurfaces);
     stopStars=site.motion ? window.mountSpaceStars(root.querySelector('canvas'), {arrival,onArrivalReveal:revealArrival,onArrivalComplete:completeArrival,starDensity:site.starDensity,meteorIntervalMin:site.meteorIntervalMin,meteorIntervalMax:site.meteorIntervalMax,exclude:()=>{const region=root.querySelector('.orbit-usage');if(!region)return;const boxes=[region,...region.querySelectorAll('.player-board')].map(node=>node.getBoundingClientRect());const left=Math.min(...boxes.map(b=>b.left)),top=Math.min(...boxes.map(b=>b.top)),right=Math.max(...boxes.map(b=>b.right)),bottom=Math.max(...boxes.map(b=>b.bottom));return {left,top,right,bottom,width:right-left,height:bottom-top};},prepareMeteorBurst:count=>player.prepare(count),onMeteorBurst:burst=>player.record(burst),onBackgroundMeteor:()=>player.recordBackground(),onWarp:()=>player.warp()}) : null;
     root.addEventListener('click',event=>{
       // Pointer clicks must not leave homepage controls armed for the next Space.
@@ -43,13 +43,21 @@
       if([...event.key].length===1&&event.key.trim()){event.preventDefault();catalog.open('all',event.key);}
     });
     let visitor='';
-    try{visitor=localStorage.getItem('dio-visitor')||'';if(!/^[a-f0-9]{32}$/.test(visitor)){visitor=Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');localStorage.setItem('dio-visitor',visitor);}}catch{}
+    try {
+      const visitorKey='orbit-visitor';
+      const savedVisitor=localStorage.getItem(visitorKey);
+      visitor=savedVisitor??localStorage.getItem('dio-visitor')??'';
+      if(!/^[a-f0-9]{32}$/.test(visitor)){
+        visitor=Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');
+      }
+      if(visitor!==savedVisitor)localStorage.setItem(visitorKey,visitor);
+    }catch{}
     const record=event=>player.identityReady.then(()=>fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(event),keepalive:true})).catch(()=>{});
     const stopUsage=window.mountPortalUsage(root.querySelector('.orbit-layout'), {motion:site.motion});
     record({kind:'visit',visitor}).finally(()=>stopUsage.refresh());
     const click=event=>{if(event.type==='auxclick'&&event.button!==1)return;const anchor=event.target.closest('a[data-app-id]');if(anchor)record({kind:'click',app:anchor.dataset.appId}).finally(()=>stopUsage.refresh());};
     document.addEventListener('click',click);document.addEventListener('auxclick',click);
-    window.addEventListener('pagehide',event=>{if(!event.persisted){stopOrbit?.();stopStars?.();stopUsage?.();stopSurfaces?.();root.removeEventListener('dio:surfaces',refreshSurfaces);root.removeEventListener('dio:application-added',refreshPlayer);player.stop();}},{once:true});
+    window.addEventListener('pagehide',event=>{if(!event.persisted){stopOrbit?.();stopStars?.();stopUsage?.();stopSurfaces?.();root.removeEventListener('orbit:surfaces',refreshSurfaces);root.removeEventListener('orbit:application-added',refreshPlayer);player.stop();}},{once:true});
     if(!arrival)completeArrival();
   }catch(error){completeArrival();root.innerHTML='<div class="portal-error"><p>暂时无法加载应用目录</p><button type="button">重新加载</button></div>';root.querySelector('button').onclick=()=>location.reload();}
 })();

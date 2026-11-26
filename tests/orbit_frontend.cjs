@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
-const source = fs.readFileSync(process.env.DIO_ORBIT_SOURCE || path.join(__dirname, '..', 'web', 'portal', 'orbit.js'), 'utf8');
+const source = fs.readFileSync(process.env.ORBIT_SOURCE || path.join(__dirname, '..', 'web', 'portal', 'orbit.js'), 'utf8');
 
 function portal({galaxies=false,width=1440,height=900,initialSlots,blackHole=false}={}) {
   let now = 0, nextFrame = 0;
@@ -37,12 +37,11 @@ function portal({galaxies=false,width=1440,height=900,initialSlots,blackHole=fal
     });
   }
   const selectors = new Map();
-  for (const name of ['orbit-layout','orbit-scene','orbit-atmosphere','orbit-paths','orbit-world','orbit-layout-toggle','orbit-dio','orbit-axis','orbit-keyboard-hint']) selectors.set('.'+name, element(name));
+  for (const name of ['orbit-layout','orbit-scene','orbit-atmosphere','orbit-paths','orbit-world','orbit-layout-toggle','orbit-wordmark','orbit-keyboard-hint']) selectors.set('.'+name, element(name));
   Object.defineProperties(selectors.get('.orbit-scene'), {
     clientWidth:{get() {sceneReads.push('width');return width;}},
     clientHeight:{get() {sceneReads.push('height');return height;}},
   });
-  selectors.get('.orbit-dio').querySelector = name => selectors.get(name);
   selectors.get('.orbit-layout').querySelector = name => selectors.get(name);
   const positions = ['core','git','doc','week','flow','gpu','bi','seek',...(galaxies?['extra1','extra2']:[])];
   const ids = ['google','youtube','github','wikipedia','google-maps','mdn','openstreetmap','internet-archive',...(galaxies?['extra1','extra2']:[])];
@@ -76,7 +75,7 @@ function portal({galaxies=false,width=1440,height=900,initialSlots,blackHole=fal
   };
   vm.runInNewContext(source, sandbox);
   const slots=Object.fromEntries(positions.map((p,i)=>[p,ids[i]]));
-  const stop = window.dioLayouts.orbit({root, apps:ids.map(id=>({id, name:id})), slots, link:()=>'', escape:x=>x, icon:()=>'', onBackgroundPause:value=>backgroundStates.push(value),site:{title:'DIO-Space',motion:true,blackHole,...(galaxies?{galaxies:{main:initialSlots||slots}}:{})}});
+  const stop = window.portalLayouts.orbit({root, apps:ids.map(id=>({id, name:id})), slots, link:()=>'', escape:x=>x, icon:()=>'', onBackgroundPause:value=>backgroundStates.push(value),site:{title:'Orbit Portal',motion:true,blackHole,...(galaxies?{galaxies:{main:initialSlots||slots}}:{})}});
   const step = (count = 1) => {for (let index=0;index<count;index++) {now += 1000/60; const pending=[...frames.values()]; frames.clear(); pending.forEach(callback=>callback(now));}};
   return {
     selectors, satellites, writes, sceneReads, frames, step, stop, document, reduced,galaxyOptions,hole,haloStates,backgroundStates,
@@ -138,7 +137,7 @@ function portal({galaxies=false,width=1440,height=900,initialSlots,blackHole=fal
   assert.equal(h.frames.size,0,'reduced motion disables orbital scheduling');
   h.toggle();h.step(3);
   assert.equal(h.progress(),1,'reduced motion switches layouts immediately');
-  assert.equal(h.selectors.get('.orbit-dio').style.transform,'none');
+  assert.equal(h.selectors.get('.orbit-wordmark').style.transform,'none');
   h.reduced.matches=false;h.reduced.emit('change');h.step(3);
   h.toggle();h.step(40);assert.equal(h.frames.size,1,'re-enabling motion wakes the next transition');
   h.stop();

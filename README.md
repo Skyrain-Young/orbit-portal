@@ -24,13 +24,13 @@ python3.12 -m venv .venv
 
 ## 配置自己的目录
 
-默认读取 `web/catalog.json` 初始化示例目录。希望从空目录开始时，在首次启动前设置 `DIO_EMPTY_CATALOG=1`。
+默认读取 `web/catalog.json` 初始化示例目录。希望从空目录开始时，在首次启动前设置 `ORBIT_EMPTY_CATALOG=1`。
 
 ```sh
-DIO_EMPTY_CATALOG=1 .venv/bin/python server.py
+ORBIT_EMPTY_CATALOG=1 .venv/bin/python server.py
 ```
 
-应用目录、统计、玩家记录及管理员配置存放在本地 `data/`。可以用 `DIO_DATA_DIR` 或 `--data-dir` 指定其他目录。后续启动会沿用目录里的数据。使用后台添加应用、导入目录或下载备份。
+应用目录、统计、玩家记录及管理员配置存放在本地 `data/`。可以用 `ORBIT_DATA_DIR` 或 `--data-dir` 指定其他目录。后续启动会沿用目录里的数据。使用后台添加应用、导入目录或下载备份。
 
 在后台「设置」中修改站点名称和首页 Logo 文字。Logo 留空时跟随站点名称。
 
@@ -38,10 +38,10 @@ DIO_EMPTY_CATALOG=1 .venv/bin/python server.py
 
 ```sh
 docker compose up -d --build
-docker compose exec dio-space cat /app/data/initial-admin-password.txt
+docker compose exec orbit-portal cat /app/data/initial-admin-password.txt
 ```
 
-Compose 默认只在本机监听 `127.0.0.1:8080`，数据存放在 `dio-data` 卷。空目录启动使用 `DIO_EMPTY_CATALOG=1 docker compose up -d --build`。通过 HTTPS 反向代理提供访问时，设置 `DIO_COOKIE_SECURE=1`。
+Compose 默认只在本机监听 `127.0.0.1:8080`，数据存放在 `orbit-data` 卷。空目录启动使用 `ORBIT_EMPTY_CATALOG=1 docker compose up -d --build`。通过 HTTPS 反向代理提供访问时，设置 `ORBIT_COOKIE_SECURE=1`。
 
 ## 开发检查
 

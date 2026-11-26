@@ -24,5 +24,5 @@ const paths = {
   clock:'<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',
   wave:'<path d="M3 10c3.5.3 4.1 4.7 8.2 4.7 2.5 0 4.3-2.4 5.4-4.4 1.3.9 2.9 1.3 4.4.6-1.7 4.6-4.9 6.5-8.9 6.5C6.6 17.4 4.8 13.6 3 10Zm9 1c1-2 2.5-3.2 4.5-4.3"/>'
 };
-window.dioPrototypeIcon = key => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[key] ?? paths.gate}</svg>`;
+window.portalIcon = key => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[key] ?? paths.gate}</svg>`;
 })();

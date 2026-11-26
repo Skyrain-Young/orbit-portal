@@ -1,9 +1,8 @@
-window.dioLayouts ||= {};
-window.dioLayouts.orbit = ({root, apps, link, escape, icon, slots, site, onBackgroundPause}) => {
+window.portalLayouts ||= {};
+window.portalLayouts.orbit = ({root, apps, link, escape, icon, slots, site, onBackgroundPause}) => {
   const planetScale = Number.isFinite(site.planetScale) && site.planetScale > 0 ? site.planetScale : 1;
   const initialSlots=site.galaxies?.main || slots;
   const logoText = site.logoText || site.title;
-  const legacyLogo = !site.logoText && site.title === 'DIO-Space';
   const planets = [
     {position:'core', track:'inner', phase:32, compactPhase:32, mobilePhase:330, tone:'156,232,220'},
     {position:'git', track:'wide', phase:244.1, compactPhase:255.9, mobilePhase:278.6, tone:'239,202,198'},
@@ -26,7 +25,7 @@ window.dioLayouts.orbit = ({root, apps, link, escape, icon, slots, site, onBackg
           <g class="orbit-world">${trackNames.map(name => `<g data-orbit-ring="${name}">${planets.filter(planet => planet.track === name).map(planet => `<path class="orbit-track orbit-track--${planet.track}" data-orbit-segment="${planet.position}"/>`).join('')}</g>`).join('')}${trackNames.map(name => `<ellipse class="orbit-trail orbit-trail--${name}" data-orbit-trail="${name}" pathLength="100"/>`).join('')}</g>
         </svg>
         <div class="orbit-heading">
-          <h1 aria-label="${escape(site.title)}"><button class="orbit-layout-toggle" type="button" aria-label="切换为列表布局" aria-pressed="false"><span class="orbit-dio${legacyLogo ? '' : ' orbit-custom-title'}">${legacyLogo ? 'D<span class="orbit-axis">I</span>O' : escape(logoText)}</span></button>${legacyLogo ? '<span class="orbit-space">Space</span>' : ''}</h1>
+          <h1 aria-label="${escape(site.title)}"><button class="orbit-layout-toggle" type="button" aria-label="切换为列表布局" aria-pressed="false"><span class="orbit-wordmark">${escape(logoText)}</span></button></h1>
         </div>
         <nav class="orbit-constellation" aria-label="应用入口">${planets.map(planet => {
           const app = apps.find(item => item.id === planet.appId);
@@ -62,7 +61,7 @@ window.dioLayouts.orbit = ({root, apps, link, escape, icon, slots, site, onBackg
   const atmosphere = root.querySelector('.orbit-atmosphere');
   const svg = root.querySelector('.orbit-paths');
   const toggle = root.querySelector('.orbit-layout-toggle');
-  const logo = root.querySelector('.orbit-dio');
+  const logo = root.querySelector('.orbit-wordmark');
   const dialog = document.querySelector('.layout-catalog');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const tau = Math.PI * 2;
@@ -200,10 +199,6 @@ window.dioLayouts.orbit = ({root, apps, link, escape, icon, slots, site, onBackg
     const rows=Math.max(1,Math.ceil(visible.length/2));
     listGeometry = {left, gap, columnWidth, rowHeight, size:(mobile ? 34 : compact ? 42 : 52) * planetScale,
       top:mobile ? Math.max(340, height * .30) : height * .48 - rowHeight * (rows-1)/2};
-    const axis = logo.querySelector('.orbit-axis');
-    // Letter spacing is negative in the wordmark; exclude its trailing space
-    // when locating the visible I, rather than rotating around the whole word.
-    logo.style.transformOrigin = axis ? `${axis.offsetLeft + (axis.offsetWidth - parseFloat(getComputedStyle(axis).letterSpacing)) / 2}px 50%` : '50% 50%';
     planets.forEach((planet, index) => {
       const style = getComputedStyle(planet.node);
       planet.size = parseFloat(style.getPropertyValue('--orbit-size')) * planetScale;
@@ -514,7 +509,7 @@ window.dioLayouts.orbit = ({root, apps, link, escape, icon, slots, site, onBackg
         }
       }
       updateVisibility();
-      root.dispatchEvent(new Event('dio:surfaces',{bubbles:true}));
+      root.dispatchEvent(new Event('orbit:surfaces',{bubbles:true}));
       resize();
     };
     galaxyControls=window.mountGalaxyNavigation({resume:requestFrame,prepareTravel,hole,layout,scene,apps,groups:site.groups,layouts:site.galaxies,apply,geometry:holeGeometry,points:()=>planets.filter(p=>!p.node.hidden).map(p=>({anchor:p.anchor,seat:p.position,...(listTarget?p.row:point(p))})),accelerate:()=>blackHole?.accelerate(.75),motion:motionEnabled});

@@ -132,22 +132,22 @@ def locked(folder):
 
 
 def create_app(data_dir=None, password=None):
-    folder = Path(data_dir or os.environ.get('DIO_DATA_DIR', ROOT / 'data'))
+    folder = Path(data_dir or os.environ.get('ORBIT_DATA_DIR', ROOT / 'data'))
     folder.mkdir(parents=True, exist_ok=True)
     catalog_path, database = folder / 'catalog.json', folder / 'usage.sqlite3'
     with locked(folder):
         if not catalog_path.exists():
             initial = json.loads((WEB / 'catalog.json').read_text())
-            if os.environ.get('DIO_EMPTY_CATALOG') == '1':
+            if os.environ.get('ORBIT_EMPTY_CATALOG') == '1':
                 initial.update(apps=[], slots=dict.fromkeys(SLOTS))
                 initial.pop('galaxies', None)
             validate(initial)
             atomic(catalog_path, json.dumps(initial, ensure_ascii=False, indent=2).encode())
         if not (folder / 'secret.key').exists(): atomic(folder / 'secret.key', secrets.token_bytes(32))
         if not (folder / 'auth.json').exists():
-            pw = password or os.environ.get('DIO_ADMIN_PASSWORD') or secrets.token_urlsafe(20)
+            pw = password or os.environ.get('ORBIT_ADMIN_PASSWORD') or secrets.token_urlsafe(20)
             atomic(folder / 'auth.json', json.dumps({'hash':generate_password_hash(pw)}).encode())
-            if not password and not os.environ.get('DIO_ADMIN_PASSWORD'):
+            if not password and not os.environ.get('ORBIT_ADMIN_PASSWORD'):
                 atomic(folder / 'initial-admin-password.txt', (pw+'\n').encode())
                 logging.warning('管理员初始密码已写入 %s；登录后请修改密码并删除该文件', folder / 'initial-admin-password.txt')
     initialize(database)
@@ -159,7 +159,7 @@ def create_app(data_dir=None, password=None):
     app.json.sort_keys = False
     app.secret_key = (folder / 'secret.key').read_bytes()
     app.config.update(MAX_CONTENT_LENGTH=512*1024, SESSION_COOKIE_HTTPONLY=True,
-                      SESSION_COOKIE_SAMESITE='Strict', SESSION_COOKIE_SECURE=os.environ.get('DIO_COOKIE_SECURE')=='1',
+                      SESSION_COOKIE_SAMESITE='Strict', SESSION_COOKIE_SECURE=os.environ.get('ORBIT_COOKIE_SECURE')=='1',
                       PERMANENT_SESSION_LIFETIME=timedelta(hours=8), DATA_DIR=folder)
 
     def load():
@@ -231,7 +231,7 @@ def create_app(data_dir=None, password=None):
     def health():
         load()
         with closing(sqlite3.connect(database)) as db, db: db.execute('SELECT 1 FROM totals LIMIT 1')
-        return jsonify(status='ok',version=VERSION,revision=os.environ.get('DIO_REVISION','development'))
+        return jsonify(status='ok',version=VERSION,revision=os.environ.get('ORBIT_REVISION','development'))
     @app.get('/api/admin/session')
     def state(): return jsonify(authenticated=authenticated(),csrf=csrf(),version=VERSION,icons=ICONS)
     @app.post('/api/admin/login')
@@ -292,10 +292,10 @@ def create_app(data_dir=None, password=None):
     @protected
     def download_backup():
         with tempfile.TemporaryDirectory() as temp:
-            path=Path(temp)/'dio-backup.zip'
+            path=Path(temp)/'orbit-backup.zip'
             backup(folder,path)
             payload=path.read_bytes()
-        return send_file(io.BytesIO(payload),mimetype='application/zip',as_attachment=True,download_name='dio-backup.zip')
+        return send_file(io.BytesIO(payload),mimetype='application/zip',as_attachment=True,download_name='orbit-backup.zip')
     @app.get('/api/admin/previous')
     @protected
     def previous():
@@ -327,7 +327,7 @@ def create_app(data_dir=None, password=None):
         for row in data['ranking']:
             name=row['name']; name="'"+name if name[:1] in '=+-@\t\r' else name
             writer.writerow(['click',row['id'],name,row['count']])
-        return send_file(io.BytesIO(('\ufeff'+out.getvalue()).encode()),mimetype='text/csv',as_attachment=True,download_name='dio-usage.csv')
+        return send_file(io.BytesIO(('\ufeff'+out.getvalue()).encode()),mimetype='text/csv',as_attachment=True,download_name='orbit-usage.csv')
     @app.post('/api/events')
     def events():
         if authenticated(): return '',204
@@ -358,7 +358,7 @@ def backup(folder, destination):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command',nargs='?',choices=['serve','backup','restore','reset-password'],default='serve')
-    parser.add_argument('--data-dir',type=Path,default=Path(os.environ.get('DIO_DATA_DIR',ROOT/'data')))
+    parser.add_argument('--data-dir',type=Path,default=Path(os.environ.get('ORBIT_DATA_DIR',ROOT/'data')))
     parser.add_argument('--file',type=Path)
     parser.add_argument('--host',default='127.0.0.1'); parser.add_argument('--port',type=int,default=8080)
     args=parser.parse_args()

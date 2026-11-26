@@ -4,7 +4,7 @@ Planet maps by **Solar System Scope / INOVE**. Source collection: [Solar System 
 
 Licensed under [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/). The collection permits reuse, adaptation and redistribution, including commercial use, with attribution.
 
-These are the original downloaded JPEG files, without pixel edits or re-encoding. DIO-Space creates adapted displays by mapping the textures onto spheres and adding lighting / atmospheric effects. The current portal uses pre-rendered lossless PNG surfaces; the original browser renderer is retained as an offline generation tool. No endorsement by the texture creators is implied.
+These are the original downloaded JPEG files, without pixel edits or re-encoding. Orbit Portal creates adapted displays by mapping the textures onto spheres and adding lighting / atmospheric effects. The current portal uses pre-rendered lossless PNG surfaces; the original browser renderer is retained as an offline generation tool. No endorsement by the texture creators is implied.
 
 The collection describes the maps as equirectangular projections based on NASA elevation and imagery, with some unmapped areas filled by the creators and colors adjusted by the creators.
 

@@ -82,7 +82,7 @@ window.mountGalaxyNavigation=({resume,prepareTravel,hole,layout,scene,apps,group
       const response=await fetch('/api/galaxies/applications',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':identity.csrf},body:JSON.stringify(payload),signal});
       const result=await response.json();if(!response.ok)throw Error(result.error||'添加失败，请重试');
       if(!apps.some(a=>a.id===result.app.id))apps.push(result.app);
-      layouts[current][selectedSeat]=result.app.id;apply(layouts[current]);dialog.close();layout.dispatchEvent(new Event('dio:application-added',{bubbles:true}));
+      layouts[current][selectedSeat]=result.app.id;apply(layouts[current]);dialog.close();layout.dispatchEvent(new Event('orbit:application-added',{bubbles:true}));
       const born=points().find(p=>p.seat===selectedSeat);
       if(born&&motion()){born.anchor.classList.add('galaxy-birth');born.anchor.addEventListener('animationend',()=>born.anchor.classList.remove('galaxy-birth'),{once:true,signal});}
     }catch(e){if(e.name!=='AbortError')error.textContent=e.message;}

@@ -1,13 +1,13 @@
 services:
-  dio-space:
+  orbit-portal:
     build: .
     ports:
       - "127.0.0.1:8080:8080"
     volumes:
-      - dio-data:/app/data
+      - orbit-data:/app/data
     environment:
-      DIO_COOKIE_SECURE: ${DIO_COOKIE_SECURE:-0}
-      DIO_EMPTY_CATALOG: ${DIO_EMPTY_CATALOG:-0}
+      ORBIT_COOKIE_SECURE: ${ORBIT_COOKIE_SECURE:-0}
+      ORBIT_EMPTY_CATALOG: ${ORBIT_EMPTY_CATALOG:-0}
     restart: unless-stopped
 volumes:
-  dio-data:
+  orbit-data:

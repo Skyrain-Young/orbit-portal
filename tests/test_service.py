@@ -27,7 +27,7 @@ class PortalTest(unittest.TestCase):
 
     def test_empty_catalog_initializes_all_seats_without_overwriting_existing_data(self):
         folder = self.folder / 'empty'
-        with patch.dict(os.environ, {'DIO_EMPTY_CATALOG': '1'}):
+        with patch.dict(os.environ, {'ORBIT_EMPTY_CATALOG': '1'}):
             empty = create_app(folder, password='test-password-long').test_client()
             self.assertEqual(empty.get('/healthz').status_code, 200)
             self.assertEqual(empty.get('/api/catalog').json['apps'], [])
