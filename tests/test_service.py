@@ -44,6 +44,34 @@ class PortalTest(unittest.TestCase):
         self.login()
         self.assertEqual(self.client.put('/api/admin/catalog',json={}).status_code,403)
         self.assertEqual(self.client.get('/api/admin/catalog').status_code,200)
+
+    def test_site_branding_defaults_and_custom_logo(self):
+        site = self.public.get('/api/catalog').json['site']
+        self.assertEqual(site['title'], 'Orbit Portal')
+        self.assertNotIn('logoText', site)
+        with self.public.get('/') as response:
+            self.assertIn('<title>Orbit Portal</title>', response.get_data(as_text=True))
+        with self.public.get('/admin') as response:
+            self.assertIn('<title>Orbit Portal · 管理</title>', response.get_data(as_text=True))
+
+        self.login()
+        for invalid in (None, [], 7, 'x' * 61):
+            with self.subTest(logo_text=invalid):
+                payload = self.client.get('/api/admin/catalog').json
+                payload['catalog']['site']['logoText'] = invalid
+                self.assertEqual(self.save(payload).status_code, 400)
+        payload = self.client.get('/api/admin/catalog').json
+        payload['catalog']['site'].update(title='Night Sky', logoText='  Star & Ship  ')
+        self.assertEqual(self.save(payload).status_code, 200)
+        restarted = create_app(self.folder).test_client()
+        site = restarted.get('/api/catalog').json['site']
+        self.assertEqual((site['title'], site['logoText']), ('Night Sky', 'Star & Ship'))
+
+        payload = self.client.get('/api/admin/catalog').json
+        payload['catalog']['site']['logoText'] = '   '
+        self.assertEqual(self.save(payload).status_code, 200)
+        self.assertEqual(self.public.get('/api/catalog').json['site']['logoText'], '')
+
     def test_catalog_hot_reload_conflict_validation_and_history(self):
         self.login();payload=self.client.get('/api/admin/catalog').json;stale=copy.deepcopy(payload)
         payload['catalog']['apps'][0]['name']='Updated'
@@ -177,7 +205,7 @@ class PortalTest(unittest.TestCase):
         self.login();r=self.client.get('/api/admin/backup');self.assertEqual(r.status_code,200)
         with zipfile.ZipFile(io.BytesIO(r.data)) as z:
             self.assertEqual(set(z.namelist()),{'catalog.json','usage.sqlite3','auth.json','secret.key'})
-            self.assertEqual(json.loads(z.read('catalog.json'))['site']['title'],'DIO-Space')
+            self.assertEqual(json.loads(z.read('catalog.json'))['site']['title'],'Orbit Portal')
         for path in ['/data/auth.json','/assets/../../data/auth.json','/assets/../catalog.json']:
             self.assertEqual(self.public.get(path).status_code,404)
         self.assertEqual(self.client.get('/healthz').json['version'],'0.1.0')
@@ -189,7 +217,7 @@ class PortalTest(unittest.TestCase):
         client=create_app(restored).test_client();csrf=client.get('/api/admin/session').json['csrf']
         self.assertEqual(client.post('/api/admin/login',json={'password':'test-password-long'},headers={'X-CSRF-Token':csrf}).status_code,200)
         self.assertEqual(client.get('/api/admin/usage?days=1').json['visits'],1)
-        self.assertEqual(client.get('/api/catalog').json['site']['title'],'DIO-Space')
+        self.assertEqual(client.get('/api/catalog').json['site']['title'],'Orbit Portal')
     def test_login_throttle(self):
         for _ in range(10):self.client.post('/api/admin/login',json={'password':'wrong'},headers={'X-CSRF-Token':self.csrf})
         self.assertEqual(self.client.post('/api/admin/login',json={'password':'wrong'},headers={'X-CSRF-Token':self.csrf}).status_code,429)

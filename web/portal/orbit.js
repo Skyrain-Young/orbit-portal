@@ -2,6 +2,8 @@ window.dioLayouts ||= {};
 window.dioLayouts.orbit = ({root, apps, link, escape, icon, slots, site, onBackgroundPause}) => {
   const planetScale = Number.isFinite(site.planetScale) && site.planetScale > 0 ? site.planetScale : 1;
   const initialSlots=site.galaxies?.main || slots;
+  const logoText = site.logoText || site.title;
+  const legacyLogo = !site.logoText && site.title === 'DIO-Space';
   const planets = [
     {position:'core', track:'inner', phase:32, compactPhase:32, mobilePhase:330, tone:'156,232,220'},
     {position:'git', track:'wide', phase:244.1, compactPhase:255.9, mobilePhase:278.6, tone:'239,202,198'},
@@ -24,7 +26,7 @@ window.dioLayouts.orbit = ({root, apps, link, escape, icon, slots, site, onBackg
           <g class="orbit-world">${trackNames.map(name => `<g data-orbit-ring="${name}">${planets.filter(planet => planet.track === name).map(planet => `<path class="orbit-track orbit-track--${planet.track}" data-orbit-segment="${planet.position}"/>`).join('')}</g>`).join('')}${trackNames.map(name => `<ellipse class="orbit-trail orbit-trail--${name}" data-orbit-trail="${name}" pathLength="100"/>`).join('')}</g>
         </svg>
         <div class="orbit-heading">
-          <h1 aria-label="${escape(site.title)}"><button class="orbit-layout-toggle" type="button" aria-label="切换为列表布局" aria-pressed="false"><span class="orbit-dio${site.title !== 'DIO-Space' ? ' orbit-custom-title' : ''}">${site.title === 'DIO-Space' ? 'D<span class="orbit-axis">I</span>O' : escape(site.title)}</span></button>${site.title === 'DIO-Space' ? '<span class="orbit-space">Space</span>' : ''}</h1>
+          <h1 aria-label="${escape(site.title)}"><button class="orbit-layout-toggle" type="button" aria-label="切换为列表布局" aria-pressed="false"><span class="orbit-dio${legacyLogo ? '' : ' orbit-custom-title'}">${legacyLogo ? 'D<span class="orbit-axis">I</span>O' : escape(logoText)}</span></button>${legacyLogo ? '<span class="orbit-space">Space</span>' : ''}</h1>
         </div>
         <nav class="orbit-constellation" aria-label="应用入口">${planets.map(planet => {
           const app = apps.find(item => item.id === planet.appId);
